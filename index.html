@@ -1,0 +1,566 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  MapPin, 
+  TrendingUp, 
+  TrendingDown,
+  Bell,
+  Calendar,
+  Phone,
+  MessageCircle,
+  Star,
+  Filter,
+  Search,
+  Navigation,
+  Truck,
+  DollarSign,
+  Users,
+  Clock,
+  AlertTriangle,
+  CheckCircle,
+  Leaf,
+  BarChart3,
+  Settings,
+  User,
+  ShoppingCart,
+  Target,
+  Award
+} from 'lucide-react';
+
+const AgriMarketConnect = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedCrop, setSelectedCrop] = useState('tomatoes');
+  const [userLocation, setUserLocation] = useState('Springfield County');
+  const [notifications, setNotifications] = useState(3);
+  const [selectedBuyer, setSelectedBuyer] = useState(null);
+
+  // Sample market data
+  const marketPrices = {
+    tomatoes: { current: 2.85, yesterday: 2.65, trend: 'up', demand: 'high' },
+    corn: { current: 4.20, yesterday: 4.35, trend: 'down', demand: 'medium' },
+    wheat: { current: 6.80, yesterday: 6.75, trend: 'up', demand: 'high' },
+    soybeans: { current: 13.50, yesterday: 13.25, trend: 'up', demand: 'medium' },
+    potatoes: { current: 0.95, yesterday: 0.88, trend: 'up', demand: 'high' },
+    carrots: { current: 1.45, yesterday: 1.52, trend: 'down', demand: 'low' }
+  };
+
+  const nearbyBuyers = [
+    {
+      id: 1,
+      name: "Green Valley Co-op",
+      type: "Cooperative",
+      distance: "2.3 miles",
+      rating: 4.8,
+      buying: ["tomatoes", "corn", "potatoes"],
+      lastPrice: 2.80,
+      contact: "(555) 123-4567",
+      verified: true,
+      paymentTerms: "Net 15",
+      minQuantity: "50 lbs"
+    },
+    {
+      id: 2,
+      name: "Farm Fresh Markets",
+      type: "Retail Chain",
+      distance: "5.1 miles",
+      rating: 4.6,
+      buying: ["tomatoes", "carrots", "wheat"],
+      lastPrice: 2.90,
+      contact: "(555) 987-6543",
+      verified: true,
+      paymentTerms: "Net 30",
+      minQuantity: "100 lbs"
+    },
+    {
+      id: 3,
+      name: "Rodriguez Family Restaurant",
+      type: "Restaurant",
+      distance: "3.8 miles",
+      rating: 4.9,
+      buying: ["tomatoes", "potatoes", "carrots"],
+      lastPrice: 3.20,
+      contact: "(555) 456-7890",
+      verified: true,
+      paymentTerms: "Cash",
+      minQuantity: "25 lbs"
+    }
+  ];
+
+  const alerts = [
+    {
+      id: 1,
+      type: "price-surge",
+      message: "Tomato prices up 15% in your area!",
+      time: "2 hours ago",
+      urgent: true
+    },
+    {
+      id: 2,
+      type: "buyer-request",
+      message: "New buyer looking for corn within 5 miles",
+      time: "4 hours ago",
+      urgent: false
+    },
+    {
+      id: 3,
+      type: "weather-alert",
+      message: "Rain expected - perfect time to sell stored grain",
+      time: "6 hours ago",
+      urgent: false
+    }
+  ];
+
+  const myListings = [
+    {
+      id: 1,
+      crop: "tomatoes",
+      quantity: "200 lbs",
+      quality: "Grade A",
+      harvestDate: "2024-05-20",
+      asking: 2.85,
+      status: "active",
+      views: 12,
+      inquiries: 3
+    },
+    {
+      id: 2,
+      crop: "corn",
+      quantity: "500 bushels",
+      quality: "Premium",
+      harvestDate: "2024-05-18",
+      asking: 4.25,
+      status: "pending",
+      views: 8,
+      inquiries: 1
+    }
+  ];
+
+  const formatPrice = (price) => `$${price.toFixed(2)}`;
+  const formatChange = (current, previous) => {
+    const change = ((current - previous) / previous * 100).toFixed(1);
+    return `${change > 0 ? '+' : ''}${change}%`;
+  };
+
+  const getDemandColor = (demand) => {
+    switch(demand) {
+      case 'high': return 'text-green-600 bg-green-100';
+      case 'medium': return 'text-yellow-600 bg-yellow-100';
+      case 'low': return 'text-red-600 bg-red-100';
+      default: return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
+      {/* Header */}
+      <div className="bg-white shadow-lg sticky top-0 z-40">
+        <div className="max-w-md mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-gray-800 flex items-center">
+                🌾 AgriMarket Connect
+              </h1>
+              <p className="text-sm text-gray-600 flex items-center mt-1">
+                <MapPin className="w-3 h-3 mr-1" />
+                {userLocation}
+              </p>
+            </div>
+            <div className="relative">
+              <Bell className="w-6 h-6 text-gray-600" />
+              {notifications > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {notifications}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-md mx-auto">
+        {/* Tab Navigation */}
+        <div className="px-4 py-3">
+          <div className="bg-white rounded-2xl shadow-lg p-1">
+            <div className="grid grid-cols-4 gap-1">
+              {[
+                { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+                { id: 'prices', label: 'Prices', icon: DollarSign },
+                { id: 'buyers', label: 'Buyers', icon: Users },
+                { id: 'listings', label: 'My Sales', icon: ShoppingCart }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex flex-col items-center px-2 py-3 rounded-xl transition-all ${
+                    activeTab === tab.id
+                      ? 'bg-green-500 text-white shadow-lg'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4 mb-1" />
+                  <span className="font-medium text-xs">{tab.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Dashboard Tab */}
+        {activeTab === 'dashboard' && (
+          <div className="px-4 space-y-4">
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white rounded-2xl shadow-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Target className="w-8 h-8 text-green-500" />
+                  <TrendingUp className="w-5 h-5 text-green-500" />
+                </div>
+                <p className="text-2xl font-bold text-gray-800">$2.85</p>
+                <p className="text-sm text-gray-600">Best Price Today</p>
+                <p className="text-xs text-green-600 font-medium">Tomatoes</p>
+              </div>
+              <div className="bg-white rounded-2xl shadow-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Users className="w-8 h-8 text-blue-500" />
+                  <Award className="w-5 h-5 text-blue-500" />
+                </div>
+                <p className="text-2xl font-bold text-gray-800">8</p>
+                <p className="text-sm text-gray-600">Active Buyers</p>
+                <p className="text-xs text-blue-600 font-medium">Within 10 miles</p>
+              </div>
+            </div>
+
+            {/* Urgent Alerts */}
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                <AlertTriangle className="w-5 h-5 mr-2 text-amber-500" />
+                Market Alerts
+              </h3>
+              <div className="space-y-3">
+                {alerts.slice(0, 2).map(alert => (
+                  <div key={alert.id} className={`p-3 rounded-xl border-l-4 ${
+                    alert.urgent ? 'border-red-500 bg-red-50' : 'border-blue-500 bg-blue-50'
+                  }`}>
+                    <p className="font-medium text-gray-800">{alert.message}</p>
+                    <p className="text-sm text-gray-600 mt-1 flex items-center">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {alert.time}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Today's Opportunities */}
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                <Leaf className="w-5 h-5 mr-2 text-green-500" />
+                Today's Opportunities
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-green-50 rounded-xl">
+                  <div>
+                    <p className="font-medium text-gray-800">Premium Tomatoes</p>
+                    <p className="text-sm text-gray-600">Rodriguez Restaurant needs 50 lbs</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-green-600">$3.20/lb</p>
+                    <p className="text-xs text-gray-500">3.8 miles</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl">
+                  <div>
+                    <p className="font-medium text-gray-800">Organic Corn</p>
+                    <p className="text-sm text-gray-600">Green Valley Co-op bulk order</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-blue-600">$4.50/bu</p>
+                    <p className="text-xs text-gray-500">2.3 miles</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Market Prices Tab */}
+        {activeTab === 'prices' && (
+          <div className="px-4 space-y-4">
+            {/* Price Overview */}
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">Live Market Prices</h3>
+              <div className="space-y-3">
+                {Object.entries(marketPrices).map(([crop, data]) => (
+                  <div key={crop} className="flex items-center justify-between p-3 border rounded-xl hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                        <Leaf className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-800 capitalize">{crop}</p>
+                        <span className={`text-xs px-2 py-1 rounded-full ${getDemandColor(data.demand)}`}>
+                          {data.demand} demand
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="flex items-center">
+                        <p className="font-bold text-gray-800 mr-2">{formatPrice(data.current)}</p>
+                        {data.trend === 'up' ? (
+                          <TrendingUp className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <TrendingDown className="w-4 h-4 text-red-500" />
+                        )}
+                      </div>
+                      <p className={`text-sm ${data.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatChange(data.current, data.yesterday)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Alerts Setup */}
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                <Bell className="w-5 h-5 mr-2 text-blue-500" />
+                Price Alerts
+              </h3>
+              <p className="text-gray-600 mb-4 text-sm">Get notified when prices hit your target</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div>
+                    <p className="font-medium text-gray-800">Tomatoes</p>
+                    <p className="text-sm text-gray-600">Alert when > $3.00/lb</p>
+                  </div>
+                  <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5"></div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div>
+                    <p className="font-medium text-gray-800">Corn</p>
+                    <p className="text-sm text-gray-600">Alert when > $4.50/bu</p>
+                  </div>
+                  <div className="w-12 h-6 bg-gray-300 rounded-full relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute left-0.5 top-0.5"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Buyers Tab */}
+        {activeTab === 'buyers' && (
+          <div className="px-4 space-y-4">
+            {/* Search and Filter */}
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              <div className="flex gap-2 mb-3">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search buyers..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+                <button className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors">
+                  <Filter className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Nearby Buyers */}
+            <div className="space-y-3">
+              {nearbyBuyers.map(buyer => (
+                <div key={buyer.id} className="bg-white rounded-2xl shadow-lg p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center mb-1">
+                        <h4 className="font-bold text-gray-800 mr-2">{buyer.name}</h4>
+                        {buyer.verified && (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 mb-1">{buyer.type}</p>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Navigation className="w-3 h-3 mr-1" />
+                        <span>{buyer.distance}</span>
+                        <span className="mx-2">•</span>
+                        <Star className="w-3 h-3 mr-1 text-yellow-500" />
+                        <span>{buyer.rating}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-green-600">{formatPrice(buyer.lastPrice)}</p>
+                      <p className="text-xs text-gray-500">last paid</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 mb-3 text-xs">
+                    <div>
+                      <p className="text-gray-500">Payment Terms</p>
+                      <p className="font-medium text-gray-700">{buyer.paymentTerms}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Min Quantity</p>
+                      <p className="font-medium text-gray-700">{buyer.minQuantity}</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500 mb-1">Currently Buying:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {buyer.buying.map(crop => (
+                        <span key={crop} className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full capitalize">
+                          {crop}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setSelectedBuyer(buyer)}
+                      className="flex-1 bg-green-500 text-white py-2 px-4 rounded-xl font-medium hover:bg-green-600 transition-colors flex items-center justify-center"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-1" />
+                      Contact
+                    </button>
+                    <button className="px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+                      <Phone className="w-4 h-4 text-gray-600" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* My Sales Tab */}
+        {activeTab === 'listings' && (
+          <div className="px-4 space-y-4">
+            {/* Quick Actions */}
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              <button className="w-full bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition-colors flex items-center justify-center">
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                Create New Listing
+              </button>
+            </div>
+
+            {/* Active Listings */}
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">Your Active Listings</h3>
+              <div className="space-y-3">
+                {myListings.map(listing => (
+                  <div key={listing.id} className="border rounded-xl p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h4 className="font-bold text-gray-800 capitalize">{listing.crop}</h4>
+                        <p className="text-sm text-gray-600">{listing.quantity} • {listing.quality}</p>
+                        <p className="text-xs text-gray-500">Harvested: {listing.harvestDate}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-green-600">{formatPrice(listing.asking)}</p>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          listing.status === 'active' 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {listing.status}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-3">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-blue-600">{listing.views}</p>
+                        <p className="text-xs text-gray-500">Views</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-green-600">{listing.inquiries}</p>
+                        <p className="text-xs text-gray-500">Inquiries</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button className="flex-1 bg-blue-500 text-white py-2 rounded-xl text-sm font-medium hover:bg-blue-600 transition-colors">
+                        Edit Listing
+                      </button>
+                      <button className="flex-1 border border-gray-300 text-gray-600 py-2 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
+                        View Details
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Sales Performance */}
+            <div className="bg-white rounded-2xl shadow-lg p-4">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">This Month's Performance</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">$2,340</p>
+                  <p className="text-sm text-gray-600">Total Sales</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-blue-600">12</p>
+                  <p className="text-sm text-gray-600">Transactions</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Contact Modal */}
+        {selectedBuyer && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-800">Contact {selectedBuyer.name}</h3>
+                <button 
+                  onClick={() => setSelectedBuyer(null)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center p-3 bg-gray-50 rounded-xl">
+                  <Phone className="w-5 h-5 text-green-500 mr-3" />
+                  <div>
+                    <p className="font-medium text-gray-800">{selectedBuyer.contact}</p>
+                    <p className="text-sm text-gray-600">Call directly</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center p-3 bg-gray-50 rounded-xl">
+                  <MessageCircle className="w-5 h-5 text-blue-500 mr-3" />
+                  <div>
+                    <p className="font-medium text-gray-800">Send Message</p>
+                    <p className="text-sm text-gray-600">Via AgriMarket platform</p>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => setSelectedBuyer(null)}
+                  className="w-full bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition-colors"
+                >
+                  Start Conversation
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bottom Spacing */}
+        <div className="h-20"></div>
+      </div>
+    </div>
+  );
+};
+
+export default AgriMarketConnect;
